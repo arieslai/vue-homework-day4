@@ -29,8 +29,8 @@ const hasLikeStation = () => { return store.hasLikeStation(props.station) }
 const detailModal = useTemplateRef("detail-modal")
 
 const info = ref({
-  'sna': '中文站名',
-  'snaen': '站名',
+  'sna': '站名',
+  'snaen': '英文站名',
   'ar': '地址',
   'aren': '英文地址',
   'available_rent_bikes': '可租借車輛數',
