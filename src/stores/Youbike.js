@@ -13,7 +13,7 @@ const useYoubikeStore = defineStore('youbike', () => {
   }
 
   const removeLikeStation = (station) => {
-    const index = likeStations.value.find((s) => s.sno == station.sno)
+    const index = likeStations.value.findIndex((s) => s.sno == station.sno)
     likeStations.value.splice(index, 1)
     localStorage.setItem(AUO_YOUBIKE_STORAGE_KEY, JSON.stringify(likeStations.value))
   }

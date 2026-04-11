@@ -1,6 +1,6 @@
 <script setup>
 import { useYoubikeStore } from '@/stores/Youbike'
-import { ref, useTemplateRef } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 
 const props = defineProps({
   station: Object
@@ -13,7 +13,6 @@ const onAddLikeStation = (station) => {
 
 const onRemoveLikeStation = (station) => {
   store.removeLikeStation(station)
-  console.log(store.likeStations)
 }
 
 const onShowDetailModal = () => {
@@ -37,6 +36,19 @@ const info = ref({
   'available_return_bikes': '可停放車輛數',
 })
 
+const rentBadgeClass = computed(() => {
+  const n = props.station.available_rent_bikes
+  if (n >= 5) return 'badge-success'
+  if (n >= 1) return 'badge-warning'
+  return 'badge-error'
+})
+
+const returnBadgeClass = computed(() => {
+  const n = props.station.available_return_bikes
+  if (n >= 5) return 'badge-success'
+  if (n >= 1) return 'badge-warning'
+  return 'badge-error'
+})
 </script>
 <template>
   <div
@@ -50,6 +62,14 @@ const info = ref({
         {{ station.sna }}
       </h2>
       <p class="text-xs text-cyan-200 mb-2">{{ station.ar }}</p>
+      <div class="flex gap-2 mb-2">
+        <span :class="['badge', 'badge-sm', 'font-semibold', rentBadgeClass]">
+          可租 {{ station.available_rent_bikes }}
+        </span>
+        <span :class="['badge', 'badge-sm', 'font-semibold', returnBadgeClass]">
+          可還 {{ station.available_return_bikes }}
+        </span>
+      </div>
       <div class="justify-end card-actions gap-2">
         <button @click="onShowDetailModal" class="btn btn-sm btn-info btn-glass shadow-md">詳細</button>
         <button v-if="!hasLikeStation()" @click="onAddLikeStation(station)"
