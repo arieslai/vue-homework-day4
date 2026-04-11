@@ -1,10 +1,24 @@
-<!DOCTYPE html>
-<html lang="" data-theme="dark">
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
   <head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vite App</title>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>台北市 YouBike 查詢</title>
+    <script>
+      ;(() => {
+        const storageKey = 'auo-youbike-theme'
+
+        try {
+          const savedTheme = localStorage.getItem(storageKey)
+          const initialTheme = savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : 'dark'
+
+          document.documentElement.setAttribute('data-theme', initialTheme)
+        } catch {
+          document.documentElement.setAttribute('data-theme', 'dark')
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="app"></div>
