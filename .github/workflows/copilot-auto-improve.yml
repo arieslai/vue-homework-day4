@@ -1,0 +1,106 @@
+name: Copilot Auto Improve
+on:
+  workflow_dispatch:
+    inputs:
+      focus:
+        description: '指定改善方向（留空則由 Copilot 自動分析）'
+        required: false
+        default: ''
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  auto-improve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Copilot CLI
+        run: npm install -g @github/copilot
+
+      - name: Analyze and implement improvement
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          FOCUS: ${{ github.event.inputs.focus }}
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          BRANCH="copilot/auto-improve-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH"
+
+          FOCUS_INSTRUCTION=""
+          if [ -n "$FOCUS" ]; then
+            FOCUS_INSTRUCTION="Focus on: $FOCUS."
+          else
+            FOCUS_INSTRUCTION="Identify ONE meaningful improvement — it can be a new feature, UX enhancement, performance optimization, code refactoring, or accessibility improvement."
+          fi
+
+          copilot -p "
+          You are a senior Vue.js developer. Analyze this project's entire codebase (src/, index.html, vite.config.js, package.json, etc.) and do the following:
+
+          1. **Analyze**: Read all source files to understand the project structure, features, and current state.
+          2. **Plan**: ${FOCUS_INSTRUCTION} Choose something that is practical, self-contained, and can be completed in a single pass.
+          3. **Write a plan**: Create a file called IMPROVEMENT_PLAN.md that includes:
+             - Title of the improvement
+             - Problem / motivation
+             - Proposed solution (bullet points)
+             - Files to be changed
+          4. **Implement**: Make all the code changes needed. Ensure the code is complete, correct, and follows the existing project conventions (Vue 3, Composition API, Tailwind CSS, DaisyUI, Pinia).
+          5. **Verify**: Run 'npm install' if you added dependencies, and run 'npm run build' to make sure the project builds successfully.
+          6. **Commit**: Stage all changed files and commit with a descriptive conventional commit message.
+
+          Important rules:
+          - Do NOT break existing functionality.
+          - Keep changes focused and minimal — one improvement only.
+          - Write clean, production-quality code.
+          - Use Traditional Chinese (繁體中文) for IMPROVEMENT_PLAN.md content.
+          " \
+            --allow-tool='shell(git:*)' \
+            --allow-tool='shell(cat:*)' \
+            --allow-tool='shell(find:*)' \
+            --allow-tool='shell(ls:*)' \
+            --allow-tool='shell(npm:*)' \
+            --allow-tool='shell(npx:*)' \
+            --allow-tool='shell(node:*)' \
+            --allow-tool=read \
+            --allow-tool=write \
+            --allow-tool=edit \
+            --no-ask-user
+
+      - name: Create PR
+        env:
+          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$(git log origin/main..HEAD --oneline)" ]; then
+            echo "::error::Copilot did not produce any commits. Skipping PR creation."
+            exit 1
+          fi
+
+          BRANCH=$(git branch --show-current)
+          git push origin "$BRANCH"
+
+          if [ -f IMPROVEMENT_PLAN.md ]; then
+            gh pr create \
+              --title "feat: Copilot auto improvement - $(date +%Y-%m-%d)" \
+              --body-file IMPROVEMENT_PLAN.md \
+              --base main \
+              --head "$BRANCH"
+          else
+            gh pr create \
+              --title "feat: Copilot auto improvement - $(date +%Y-%m-%d)" \
+              --body "Copilot auto-generated improvement" \
+              --base main \
+              --head "$BRANCH"
+          fi
