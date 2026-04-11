@@ -1,6 +1,6 @@
 <script setup>
 import { useYoubikeStore } from '@/stores/Youbike'
-import { ref, useTemplateRef } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 
 const props = defineProps({
   station: Object
@@ -13,7 +13,6 @@ const onAddLikeStation = (station) => {
 
 const onRemoveLikeStation = (station) => {
   store.removeLikeStation(station)
-  console.log(store.likeStations)
 }
 
 const onShowDetailModal = () => {
@@ -37,6 +36,20 @@ const info = ref({
   'available_return_bikes': '可停放車輛數',
 })
 
+const rentBadgeClass = computed(() => {
+  const n = props.station.available_rent_bikes
+  if (n >= 5) return 'badge-success'
+  if (n >= 1) return 'badge-warning'
+  return 'badge-error'
+})
+
+const returnBadgeClass = computed(() => {
+  const n = props.station.available_return_bikes
+  if (n >= 5) return 'badge-success'
+  if (n >= 1) return 'badge-warning'
+  return 'badge-error'
+})
+
 </script>
 <template>
   <div
@@ -49,7 +62,31 @@ const info = ref({
         </svg>
         {{ station.sna }}
       </h2>
-      <p class="text-xs text-cyan-200 mb-2">{{ station.ar }}</p>
+      <p class="text-xs text-cyan-200 mb-1">{{ station.ar }}</p>
+      <div class="flex gap-3 text-xs mb-2">
+        <span class="flex items-center gap-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-300" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span class="text-cyan-300">可借</span>
+          <span :class="['badge badge-sm font-bold', rentBadgeClass]">
+            {{ station.available_rent_bikes }}
+          </span>
+        </span>
+        <span class="flex items-center gap-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-300" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M5 10l7-7m0 0l7 7m-7-7v18" />
+          </svg>
+          <span class="text-cyan-300">可還</span>
+          <span :class="['badge badge-sm font-bold', returnBadgeClass]">
+            {{ station.available_return_bikes }}
+          </span>
+        </span>
+      </div>
       <div class="justify-end card-actions gap-2">
         <button @click="onShowDetailModal" class="btn btn-sm btn-info btn-glass shadow-md">詳細</button>
         <button v-if="!hasLikeStation()" @click="onAddLikeStation(station)"
