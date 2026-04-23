@@ -6,7 +6,7 @@
 # spec_dir: docs/specs
 
 # Language for AI-generated artifacts
-locale: en
+locale: tw
 
 # Workflow toggles
 # tdd: true
@@ -22,7 +22,7 @@ locale: en
 # Custom git worktrees directory
 # worktrees_dir: .spectra/worktrees
 
-# Claude Code skill effort levels (low/medium/high/max)
+# Claude Code skill effort levels (low/medium/high/xhigh/max)
 # claude_effort:
 #   apply: high
 

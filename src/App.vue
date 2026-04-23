@@ -2,7 +2,9 @@
 import { computed, onMounted, ref } from 'vue';
 import { getApi } from './api/youbike/youbike.api';
 import YoubikeCardItem from '@/components/YoubikeCardItem/index.vue'
+import ThemeToggle from '@/components/ThemeToggle/index.vue'
 import { useYoubikeStore } from './stores/Youbike';
+import { useThemeStore } from './stores/Theme';
 
 const url = 'https://tcgbusfs.blob.core.windows.net/dotapp/youbike/v2/youbike_immediate.json'
 const likeStations = ref([])
@@ -12,7 +14,9 @@ const searchedKeyword = ref('')
 const isLoading = ref(false)
 
 const store = useYoubikeStore()
+const themeStore = useThemeStore()
 onMounted(async () => {
+  themeStore.initTheme()
   store.getLikeStation()
 })
 
@@ -48,6 +52,7 @@ const checkKeyword = computed(() => keyword.value != '')
         </svg>
         台北市 Youbike 查詢
       </h1>
+      <ThemeToggle class="ml-4" />
     </header>
     <section class="container mx-auto">
       <h1
